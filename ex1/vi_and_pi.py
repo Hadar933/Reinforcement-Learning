@@ -39,10 +39,10 @@ nA: int
 gamma: float
     Discount factor. Number in range [0, 1)
 """
-PROB, NXT_STG, RWRD, TERM = 0, 1, 2, 3  # meaningful indexing of P's values
+PROB, NEXT_STG, REWARD, TERMINAL = 0, 1, 2, 3  # meaningful indexing of P's values
 
 
-def policy_evaluation(P, nS: int, nA: int, policy: np.array, gamma: float = 0.9, tol: float = 1e-3):
+def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
     """Evaluate the value function from a given policy.
 
     Parameters
@@ -61,22 +61,19 @@ def policy_evaluation(P, nS: int, nA: int, policy: np.array, gamma: float = 0.9,
         The value function of the given policy, where value_function[s] is
         the value of state s
     """
-    # reward_from_pi = np.array([np.sum([policy[state] * P[state][action][RWRD] for action in range(nA)])
-    #                            for state in range(nS)])
-    # probability_from_pi = [np.sum([policy[state] * P[state][action][PROB] for action in range(nA)])
-    #                        for state in range(nS)]
     value_function = np.zeros(nS)
     prev_value_function = np.array([np.inf for _ in range(nS)])
     while True:
-        value_function = prev_value_function
-        for state1 in range(nS):
-            action = policy[state1]
-            immediate_reward = P[state1][action][RWRD]
-            prev_value_function[state1] = immediate_reward + \
-                                          gamma * sum([P[state1][action][PROB] * prev_value_function])
-
-        if np.linalg.norm(value_function - prev_value_function, ord='inf') <= tol:
+        for state, action in enumerate(policy):
+            greedy_term = 0
+            immediate_reward = P[state][action][0][REWARD]  # before loop, as all the rewards in P[s][a] are the same
+            for prob, next_state, reward, terminal in P[state][action]:  # all possible s' from s with action a
+                greedy_term += prob * value_function[next_state]
+            value_function[state] = immediate_reward + gamma * greedy_term
+        if np.linalg.norm(value_function - prev_value_function, np.inf) <= tol:
             break
+        else:
+            prev_value_function = value_function
 
     return value_function
 
@@ -130,7 +127,7 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
 
     value_function = np.zeros(nS)
     policy = np.zeros(nS, dtype=int)
-
+    policy_evaluation(P, nS, nA, policy, gamma, tol)
     ############################
     # YOUR IMPLEMENTATION HERE #
 
