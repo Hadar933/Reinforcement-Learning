@@ -61,12 +61,12 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
         The value function of the given policy, where value_function[s] is
         the value of state s
     """
+    prev_value_function = np.ones(nS) * -np.inf
     value_function = np.zeros(nS)
-    prev_value_function = np.array([np.inf for _ in range(nS)])
     while True:
         for state, action in enumerate(policy):
             greedy_term = 0
-            immediate_reward = P[state][action][0][REWARD]  # before loop, as all the rewards in P[s][a] are the same
+            immediate_reward = P[state][action][0][REWARD]  # before loop as all the rewards in P[s][a] are the same
             for prob, next_state, reward, terminal in P[state][action]:  # all possible s' from s with action a
                 greedy_term += prob * value_function[next_state]
             value_function[state] = immediate_reward + gamma * greedy_term
@@ -74,7 +74,6 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
             break
         else:
             prev_value_function = value_function
-
     return value_function
 
 
@@ -88,7 +87,7 @@ def policy_improvement(P, nS: int, nA: int, value_from_policy: np.ndarray, polic
     value_from_policy: np.ndarray
         The value calculated from the policy
     policy: np.array
-        The previous policy.
+        The previous policy. ( # I  dont think we need this, as we have V_pi )
 
     Returns
     -------
@@ -99,10 +98,17 @@ def policy_improvement(P, nS: int, nA: int, value_from_policy: np.ndarray, polic
     """
 
     new_policy = np.zeros(nS, dtype='int')
-
     ############################
     # YOUR IMPLEMENTATION HERE #
-
+    for state in range(nS):
+        state_action_value = np.zeros(nA)  # Q_pi(s,a)
+        for action in range(nA):
+            greedy_term = 0
+            immediate_reward = P[state][action][0][REWARD]  # before loop as all the rewards in P[s][a] are the same
+            for prob, next_state, reward, terminal in P[state][action]:  # all possible s' from s with action a
+                greedy_term += prob * value_from_policy[next_state]
+            state_action_value[action] = immediate_reward + gamma * greedy_term
+        new_policy[state] = np.argmax(state_action_value)
     ############################
     return new_policy
 
@@ -127,7 +133,6 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
 
     value_function = np.zeros(nS)
     policy = np.zeros(nS, dtype=int)
-    policy_evaluation(P, nS, nA, policy, gamma, tol)
     ############################
     # YOUR IMPLEMENTATION HERE #
 
