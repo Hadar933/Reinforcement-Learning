@@ -135,7 +135,14 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
     policy = np.zeros(nS, dtype=int)
     ############################
     # YOUR IMPLEMENTATION HERE #
-
+    while True:
+        curr_value_function = policy_evaluation(P, nS, nA, policy)
+        curr_policy = policy_improvement(P, nS, nA, curr_value_function, policy)
+        if np.all(curr_policy - policy == 0): # meaning curr policy = policy
+            break
+        else:
+            policy = curr_policy
+    value_function = curr_value_function
     ############################
     return value_function, policy
 
