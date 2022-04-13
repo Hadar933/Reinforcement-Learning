@@ -138,7 +138,7 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
     while True:
         curr_value_function = policy_evaluation(P, nS, nA, policy)
         curr_policy = policy_improvement(P, nS, nA, curr_value_function, policy)
-        if np.all(curr_policy - policy == 0): # meaning curr policy = policy
+        if (curr_policy == policy).all():
             break
         else:
             policy = curr_policy
@@ -165,13 +165,23 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
     policy: np.ndarray[nS]
     """
 
-    value_function = np.zeros(nS)
-    policy = np.zeros(nS, dtype=int)
+    v_tag = np.zeros(nS)
+    v = np.ones(nS) * np.inf
+    # policy = np.zeros(nS, dtype=int)
     ############################
     # YOUR IMPLEMENTATION HERE #
-
+    while np.linalg.norm(v - v_tag, np.inf) > tol:
+        v = v_tag
+        # list comprehension is fun!
+        v_tag = [np.max(
+            [P[s][a][0][REWARD] + gamma * np.sum([pr * v_tag[s_tag] for pr, s_tag, _, _ in P[s][a]])
+             for a in range(nA)]) for s in range(nS)]
+    v_star = v
+    pi_star = [np.argmax(
+        [P[s][a][0][REWARD] + gamma * np.sum([pr * v_star[s_tag] for pr, s_tag, _, _ in P[s][a]])
+         for a in range(nA)]) for s in range(nS)]
     ############################
-    return value_function, policy
+    return v_tag, pi_star
 
 
 def render_single(env, policy, max_steps=100):
