@@ -61,19 +61,18 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
         The value function of the given policy, where value_function[s] is
         the value of state s
     """
-    prev_value_function = np.ones(nS) * -np.inf
     value_function = np.zeros(nS)
+    prev_value_function = np.zeros(nS)
     while True:
         for state, action in enumerate(policy):
+            prev_value_function[state] = value_function[state]
             greedy_term = 0
             immediate_reward = P[state][action][0][REWARD]  # before loop as all the rewards in P[s][a] are the same
             for prob, next_state, reward, terminal in P[state][action]:  # all possible s' from s with action a
                 greedy_term += prob * value_function[next_state]
             value_function[state] = immediate_reward + gamma * greedy_term
-        if np.linalg.norm(value_function - prev_value_function, np.inf) <= tol:
+        if np.max(np.abs(prev_value_function-value_function)) <= tol:
             break
-        else:
-            prev_value_function = value_function
     return value_function
 
 
