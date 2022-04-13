@@ -71,7 +71,7 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
             for prob, next_state, reward, terminal in P[state][action]:  # all possible s' from s with action a
                 greedy_term += prob * value_function[next_state]
             value_function[state] = immediate_reward + gamma * greedy_term
-        if np.max(np.abs(prev_value_function-value_function)) <= tol:
+        if np.max(np.abs(prev_value_function - value_function)) <= tol:
             break
     return value_function
 
@@ -172,13 +172,13 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
     while np.linalg.norm(v - v_tag, np.inf) > tol:
         v = v_tag
         # list comprehension is fun!
-        v_tag = [np.max(
+        v_tag = np.array([np.max(
             [P[s][a][0][REWARD] + gamma * np.sum([pr * v_tag[s_tag] for pr, s_tag, _, _ in P[s][a]])
-             for a in range(nA)]) for s in range(nS)]
+             for a in range(nA)]) for s in range(nS)])
     v_star = v
-    pi_star = [np.argmax(
+    pi_star = np.array([np.argmax(
         [P[s][a][0][REWARD] + gamma * np.sum([pr * v_star[s_tag] for pr, s_tag, _, _ in P[s][a]])
-         for a in range(nA)]) for s in range(nS)]
+         for a in range(nA)]) for s in range(nS)])
     ############################
     return v_tag, pi_star
 
