@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='A program to run assignment 1 impl
 parser.add_argument("--env",
                     help="The name of the environment to run your algorithm on.",
                     choices=["Deterministic-4x4-FrozenLake-v0", "Stochastic-4x4-FrozenLake-v0"],
-                    default="Deterministic-4x4-FrozenLake-v0")
+                    default="Stochastic-4x4-FrozenLake-v0")
 
 """
 For policy_evaluation, policy_improvement, policy_iteration and value_iteration,
