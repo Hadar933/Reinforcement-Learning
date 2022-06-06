@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,7 +8,6 @@ from utils.general import get_logger
 from utils.test_env import EnvTest
 from q4_schedule import LinearExploration, LinearSchedule
 from q5_linear_torch import Linear
-
 
 from configs.q6_nature import config
 
@@ -28,7 +29,8 @@ class NatureQN(Linear):
         2. Set self.target_network to be the same configuration self.q_network but initialized from scratch
         3. What is the input size of the model?
 
-        To simplify, we specify the paddings as:
+        To simplify, we specify the paddings as: (note to self: this padding is a general formula
+        to achieve output which is the same dim as input)
             (stride - 1) * img_height - stride + filter_size) // 2
 
         Hints:
@@ -46,7 +48,21 @@ class NatureQN(Linear):
 
         ##############################################################
         ################ YOUR CODE HERE - 25-30 lines lines ################
-
+        in_ch = img_height * img_width * n_channels * self.config.state_history
+        self.q_network = nn.Sequential(
+            nn.Conv2d(in_channels=in_ch, out_channels=32, kernel_size=8, stride=4,
+                      padding=(3 * img_height - 4 + 8) // 2),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2, padding=(1 * img_height - 2 + 4) // 2),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=(0 * img_height - 1 + 3) // 2),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(in_features=img_height * img_width * 64, out_features=512),
+            nn.ReLU(),
+            nn.Linear(in_features=512, out_features=num_actions)
+        )
+        self.target_network = deepcopy(self.q_network)
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -85,11 +101,11 @@ if __name__ == '__main__':
 
     # exploration strategy
     exp_schedule = LinearExploration(env, config.eps_begin,
-            config.eps_end, config.eps_nsteps)
+                                     config.eps_end, config.eps_nsteps)
 
     # learning rate schedule
-    lr_schedule  = LinearSchedule(config.lr_begin, config.lr_end,
-            config.lr_nsteps)
+    lr_schedule = LinearSchedule(config.lr_begin, config.lr_end,
+                                 config.lr_nsteps)
 
     # train model
     model = NatureQN(env, config)
