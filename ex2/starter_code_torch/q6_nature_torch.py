@@ -48,7 +48,7 @@ class NatureQN(Linear):
 
         ##############################################################
         ################ YOUR CODE HERE - 25-30 lines lines ################
-        in_ch = img_height * img_width * n_channels * self.config.state_history
+        in_ch = n_channels * self.config.state_history
         self.q_network = nn.Sequential(
             nn.Conv2d(in_channels=in_ch, out_channels=32, kernel_size=8, stride=4,
                       padding=(3 * img_height - 4 + 8) // 2),
@@ -87,7 +87,8 @@ class NatureQN(Linear):
 
         ##############################################################
         ################ YOUR CODE HERE - 4-5 lines lines ################
-
+        state = state.permute(0, 3, 1, 2)
+        out = self.q_network(state) if network == 'q_network' else self.target_network(state)
         ##############################################################
         ######################## END YOUR CODE #######################
         return out

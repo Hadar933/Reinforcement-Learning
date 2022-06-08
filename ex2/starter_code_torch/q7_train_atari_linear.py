@@ -14,6 +14,7 @@ Use linear approximation for the Atari game. Please report the final result.
 Feel free to change the configurations (in the configs/ folder).
 If so, please report your hyperparameters.
 
+
 You'll find the results, log and video recordings of your agent every 250k under
 the corresponding file in the results folder. A good way to monitor the progress
 of the training is to use Tensorboard. The starter code writes summaries of different
